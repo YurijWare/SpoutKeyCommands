@@ -28,6 +28,8 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 import com.alta189.sqlLibrary.MySQL.mysqlCore;
 import com.alta189.sqlLibrary.SQLite.sqlCore;
+import com.nijiko.permissions.PermissionHandler;
+import com.nijikokun.bukkit.Permissions.Permissions;
 
 public class SpoutKeyCommands extends JavaPlugin {
     protected final Logger log = Logger.getLogger("Minecraft");
@@ -42,6 +44,7 @@ public class SpoutKeyCommands extends JavaPlugin {
 	private static Configuration conf = new Configuration(configFile);
 	
 	protected static PermissionManager permissionsExHandler;
+	protected static PermissionHandler permissionsHandler;
 	
 	protected mysqlCore manageMySQL;
 	protected sqlCore manageSQLite;
@@ -87,10 +90,16 @@ public class SpoutKeyCommands extends JavaPlugin {
 		}
 		
 		Plugin permissionsEx = pm.getPlugin("PermissionsEx");
+		Plugin permissions = pm.getPlugin("Permissions");
 		if (permissionsEx != null && permissionsEx.isEnabled()) {
 			permissionsExHandler = PermissionsEx.getPermissionManager();
 			String v = permissionsEx.getDescription().getVersion();
 			log.info(logPrefix + "PermissionsEx detected! Using version " + v);
+			
+		} else if (permissions != null && permissions.isEnabled()) {
+			permissionsHandler = ((Permissions) permissions).getHandler();
+			String v = permissions.getDescription().getVersion();
+			log.info(logPrefix + "Permissions detected! Using version " + v);
 			
 		}
 
@@ -443,6 +452,8 @@ public class SpoutKeyCommands extends JavaPlugin {
 	protected boolean checkPermissions(CommandSender sender, String node) {
 		if (permissionsExHandler != null && sender instanceof Player) {
 			return permissionsExHandler.has((Player) sender, node);
+		} else if (permissionsHandler != null && sender instanceof Player) {
+			return permissionsHandler.has((Player) sender, node);
 		} else {
 			return sender.hasPermission(node);
 		}
