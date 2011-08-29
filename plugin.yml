@@ -1,0 +1,35 @@
+name: SpoutKeyCommands
+main: com.yurijware.bukkit.SpoutKeyCommands.SpoutKeyCommands
+version: 1.1
+authors: [Yurij]
+softdepend: [Spout,PermissionsEx]
+
+description: >
+            Allows players to set commands to keys
+            
+permissions:
+  SpoutKeyCommands.*:
+    description: Allows you to use all commands and functionality
+    default: op
+    children:
+      SpoutKeyCommands.use: true
+      SpoutKeyCommands.reload: true
+  SpoutKeyCommands.use:
+    description: Allows you to set commands to keys
+    default: true
+  SpoutKeyCommands.reload:
+    description: Allows you to save and load database config
+    default: op
+    
+commands:
+  SpoutKeyCommands:
+    aliases: [skc]
+    description: Warps you to another world
+    usage: |
+           /<command> set <key> <command> - Set command
+           /<command> unset <key> - Unset command
+           /<command> check - Check wich commands are set
+           /<command> clear - Clears all commands
+           /<command> save - Save command mappings to the database
+           /<command> load - Load command mappings from the database
+           
