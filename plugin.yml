@@ -33,11 +33,11 @@ permissions:
       SpoutKeyCommands.use.global: true
       
   SpoutKeyCommands.use.personal:
-    description: Allows you to use personal commands to keys
+    description: Allows you to use personal commands
     default: true
     
   SpoutKeyCommands.use.global:
-    description: Allows you to use global commands to keys
+    description: Allows you to use global commands
     default: true
     
   SpoutKeyCommands.set.*:
@@ -47,11 +47,11 @@ permissions:
       SpoutKeyCommands.set.global: true
       
   SpoutKeyCommands.set.personal:
-    description: Allows you to set personal commands to keys
+    description: Allows you to set personal commands
     default: true
     
   SpoutKeyCommands.set.global:
-    description: Allows you to set global commands to keys
+    description: Allows you to set global commands
     
   SpoutKeyCommands.check.*:
     description: Allows you to check both own and others commands
@@ -60,7 +60,7 @@ permissions:
       SpoutKeyCommands.check.other: true
       
   SpoutKeyCommands.check.self:
-    description: Allows you to check your commands
+    description: Allows you to check your own commands
     default: true
     
   SpoutKeyCommands.check.other:
@@ -74,13 +74,13 @@ commands:
     aliases: [skc]
     description: Warps you to another world
     usage: |
-           /<command> set <key> <command> - Set personal command
-           /<command> gset <key> <command> - Set global command
-           /<command> unset <key> - Unset personal command
-           /<command> gunset <key> - Unset global command
+           /<command> set <command> - Set personal command
+           /<command> gset <command> - Set global command
+           /<command> unset - Unset personal command
+           /<command> gunset - Unset global command
            /<command> check [player] - Check wich commands are set
            /<command> clear - Clears all personal commands
            /<command> gclear - Clears all global commands
-           /<command> save - Save command mappings to the database
-           /<command> load - Load command mappings from the database
+           /<command> save - Saves the commands to the database
+           /<command> load - Loads the commands from the database
            
