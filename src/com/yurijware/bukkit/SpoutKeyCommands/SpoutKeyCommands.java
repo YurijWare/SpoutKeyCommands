@@ -36,7 +36,7 @@ public class SpoutKeyCommands extends JavaPlugin {
 	protected static PluginDescriptionFile pdfFile = null;
 	protected static String logPrefix = null;
 	
-	public static enum ChooseMode { SET, UNSET }
+	public static enum ChooseMode { GSET, GUNSET, SET, UNSET }
 	
 	private static String path = "plugins" + File.separator + "SpoutKeyCommands";
 	private static final File configFolder = new File(path);
@@ -102,7 +102,7 @@ public class SpoutKeyCommands extends JavaPlugin {
 			log.info(logPrefix + "Permissions detected! Using version " + v);
 			
 		}
-
+		
 		loadConfig();
 		
 		this.getCommand("SpoutKeyCommands").setExecutor(new Commands(this));
@@ -276,7 +276,7 @@ public class SpoutKeyCommands extends JavaPlugin {
 //				log.info(logPrefix + player + ": Adding cmd: '" + cmd + "' to: " +
 //						Keyboard.getKey(key).toString());
 				if(listPlayerConfig.containsKey(player)){
-					listPlayerConfig.get(player) .addCommand(Keyboard.getKey(key), cmd, p);
+					listPlayerConfig.get(player).addCommand(Keyboard.getKey(key), cmd, p);
 				} else {
 					Config c = new Config(player);
 					c.addCommand(Keyboard.getKey(key), cmd, p);

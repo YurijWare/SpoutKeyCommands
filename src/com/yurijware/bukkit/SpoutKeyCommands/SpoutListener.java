@@ -33,9 +33,9 @@ public class SpoutListener extends InputListener {
 			if (!valid) { return; }
 			String cmd = this.plugin.getKeyCommand(player.getName(), event.getKey());
 			String cmd_global = this.plugin.getGlobalKeyCommand(event.getKey());
-			if (!cmd_global.equals("")) {
+			if (!cmd_global.equals("") && this.plugin.checkPermissions(player, "SpoutKeyCommands.use.global")) {
 				player.performCommand(cmd_global);
-			} else if (!cmd.equals("")){
+			} else if (!cmd.equals("") && this.plugin.checkPermissions(player, "SpoutKeyCommands.use.personal")){
 				player.performCommand(cmd);
 			}
 			return;
@@ -44,13 +44,17 @@ public class SpoutListener extends InputListener {
 			return;
 		}
 		
+		String thisPluginName = this.plugin.getDescription().getName();
+		String cmd = "";
+		if (this.plugin.listPlayerCmdTemp.containsKey(player.getName())) {
+			cmd = this.plugin.listPlayerCmdTemp.get(player.getName());
+		}
+		
 		switch(mode) {
 		case SET:
 			msg = ChatColor.DARK_AQUA + "Command set to key: " +
 					event.getKey().toString().replaceAll("KEY_", "");
-			if (!this.plugin.listPlayerCmdTemp.containsKey(player.getName())) { return; }
-			String cmd = this.plugin.listPlayerCmdTemp.get(player.getName());
-			String thisPluginName = this.plugin.getDescription().getName();
+			if (cmd.equals("")) { return; }
 			
 			if (this.plugin.listGlobalPlugin.containsKey(event.getKey())) {
 				String p = this.plugin.listGlobalPlugin.get(event.getKey());
@@ -78,11 +82,31 @@ public class SpoutListener extends InputListener {
 				this.plugin.listPlayerConfig.put(player.getName(), c);
 			}
 			break;
-		case UNSET:
-			msg = ChatColor.DARK_AQUA + "Command unset from key: " +
-					event.getKey().toString().replaceAll("KEY_", "");
 			
+		case GSET:
+			msg = ChatColor.DARK_AQUA + "Global command set to key: " +
+					event.getKey().toString().replaceAll("KEY_", "");
+			if (cmd.equals("")) { return; }
+			
+			if (this.plugin.listGlobalPlugin.containsKey(event.getKey())) {
+				String p = this.plugin.listGlobalPlugin.get(event.getKey());
+				PluginManager pm = this.plugin.getServer().getPluginManager();
+				if (thisPluginName.equals(p)) {
+				} else if (pm.getPlugin(p) != null && pm.getPlugin(p).isEnabled()) {
+					player.sendMessage(ChatColor.RED + "That key is already set by " + p);
+					return;
+				}
+			}
+			
+			this.plugin.listGlobalCmds.put(event.getKey(), cmd);
+			this.plugin.listGlobalPlugin.put(event.getKey(), thisPluginName);
+			break;
+			
+		case UNSET:
 			if (this.plugin.listPlayerConfig.containsKey(player.getName())) {
+				msg = ChatColor.DARK_AQUA + "Command unset from key: " +
+						event.getKey().toString().replaceAll("KEY_", "");
+				
 				Config conf = this.plugin.listPlayerConfig.get(player.getName());
 				PluginManager pm = this.plugin.getServer().getPluginManager();
 				String p = conf.getPlugin(event.getKey());
@@ -94,6 +118,25 @@ public class SpoutListener extends InputListener {
 				}
 				this.plugin.listPlayerConfig.get(player.getName()).removeCommand(event.getKey());
 			}
+			msg = ChatColor.RED + "No command on this key";
+			break;
+		case GUNSET:
+			if (this.plugin.listGlobalPlugin.containsKey(event.getKey())) {
+				msg = ChatColor.DARK_AQUA + "Global command unset from key: " +
+						event.getKey().toString().replaceAll("KEY_", "");
+				
+				String p = this.plugin.listGlobalPlugin.get(event.getKey());
+				PluginManager pm = this.plugin.getServer().getPluginManager();
+				if (thisPluginName.equals(p)) {
+				} else if (pm.getPlugin(p) != null && pm.getPlugin(p).isEnabled()) {
+					player.sendMessage(ChatColor.RED + "That key set by " + p);
+					return;
+				}
+				this.plugin.listGlobalCmds.remove(event.getKey());
+				this.plugin.listGlobalPlugin.remove(event.getKey());
+			}
+			msg = ChatColor.RED + "No global command on this key";
+			
 			break;
 		}
 		
