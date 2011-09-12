@@ -44,5 +44,4 @@ commands:
            /<command> config - Check availible configurations
            /<command> clear - Clear all personal keys
            /<command> gclear - Clear all global keys
-           /<command> reload - Reload all config and keys
            
