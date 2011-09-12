@@ -1,146 +1,179 @@
 package com.yurijware.bukkit.SpoutKeyCommands;
 
+import java.util.LinkedHashSet;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.getspout.spoutapi.event.input.InputListener;
 import org.getspout.spoutapi.event.input.KeyPressedEvent;
+import org.getspout.spoutapi.event.input.KeyReleasedEvent;
 import org.getspout.spoutapi.gui.ScreenType;
+import org.getspout.spoutapi.keyboard.Keyboard;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 import com.yurijware.bukkit.SpoutKeyCommands.SpoutKeyCommands.ChooseMode;
 
 public class SpoutListener extends InputListener {
-	private final SpoutKeyCommands plugin;
-	
-	public SpoutListener(SpoutKeyCommands plugin) {
-		this.plugin = plugin;
-	}
 	
 	@Override
 	public void onKeyPressedEvent(KeyPressedEvent event) {
 		if (event.getScreenType() != ScreenType.GAME_SCREEN) { return; }
 		SpoutPlayer player = event.getPlayer();
 		
-		boolean valid = this.plugin.isValidKey(player, event.getKey());
-		ChooseMode mode = null;
+		PlayerOptions po = PlayerOptions.getPlayer(player);
 		String msg = "";
-		if (this.plugin.listPlayerMode.containsKey(player.getName())) {
-			mode = this.plugin.listPlayerMode.get(player.getName());
-			this.plugin.listPlayerMode.remove(player.getName());
+		
+		if (Utils.isValidModifier(event.getKey())) {
+			PlayerOptions.addPressed(player.getName(), event.getKey());
+			return;
 		}
 		
-		if (mode == null) {
-			if (!valid) { return; }
-			String cmd = this.plugin.getKeyCommand(player.getName(), event.getKey());
-			String cmd_global = this.plugin.getGlobalKeyCommand(event.getKey());
-			if (!cmd_global.equals("") && this.plugin.checkPermissions(player, "SpoutKeyCommands.use.global")) {
-				player.performCommand(cmd_global);
-			} else if (!cmd.equals("") && this.plugin.checkPermissions(player, "SpoutKeyCommands.use.personal")){
-				player.performCommand(cmd);
+		ChooseMode mode = PlayerOptions.getMode(player);
+		
+		boolean valid = Utils.isValidKey(player, event.getKey());
+		if (!valid) {
+			switch(mode) {
+			case SET:
+			case GSET:
+				player.sendMessage(ChatColor.RED + "That key combination is not valid.");
 			}
 			return;
-		} else if (mode == ChooseMode.SET && !valid) {
-			player.sendMessage(ChatColor.RED + "That key is not valid.");
+		}
+		
+		LinkedHashSet<Keyboard> allPressed = PlayerOptions.getPressed(player.getName());
+		allPressed.add(event.getKey());
+		
+		if (mode == ChooseMode.NONE) {
+			if (!Permission.check(player, "SpoutKeyCommands.use")) {
+				return;
+			}
+			
+			PlayerCmd pc = PlayerCmd.get(player, allPressed);
+			GlobalCmd gc = GlobalCmd.get(allPressed);
+			if (pc == null && gc == null) { return; }
+			
+			String perf = po.getPreferred();
+			
+			if (perf.equalsIgnoreCase("global") && gc != null || pc == null) {
+				player.performCommand(gc.getCommand());
+			} else if(perf.equalsIgnoreCase("personal") && pc != null || pc != null) {
+				player.performCommand(pc.getCommand());
+			}
+			
 			return;
 		}
 		
-		String thisPluginName = this.plugin.getDescription().getName();
-		String cmd = "";
-		if (this.plugin.listPlayerCmdTemp.containsKey(player.getName())) {
-			cmd = this.plugin.listPlayerCmdTemp.get(player.getName());
-		}
+		String cmd = PlayerOptions.getCmd(player);
+		
+		PluginManager pm = Bukkit.getServer().getPluginManager();
+		String pluginName = SpoutKeyCommands.getInstance().getDescription().getName();
+		
+		PlayerCmd pc = null;
+		GlobalCmd gc = null;
 		
 		switch(mode) {
 		case SET:
-			msg = ChatColor.DARK_AQUA + "Command set to key: " +
-					event.getKey().toString().replaceAll("KEY_", "");
 			if (cmd.equals("")) { return; }
+			msg = ChatColor.DARK_AQUA + "Command set to: " +
+					ChatColor.GREEN + Utils.getKeyString(allPressed);
 			
-			if (this.plugin.listGlobalPlugin.containsKey(event.getKey())) {
-				String p = this.plugin.listGlobalPlugin.get(event.getKey());
-				PluginManager pm = this.plugin.getServer().getPluginManager();
-				if (pm.getPlugin(p) != null && pm.getPlugin(p).isEnabled()) {
-					player.sendMessage(ChatColor.RED + "That key is already set by " + p);
-					return;
-				}
-			}
-			
-			if (this.plugin.listPlayerConfig.containsKey(player.getName())) {
-				String plugin = this.plugin.listPlayerConfig.get(player.getName()).getPlugin(event.getKey());
-				if (!thisPluginName.equals(plugin)) {
-					PluginManager pm = this.plugin.getServer().getPluginManager();
-					if (pm.getPlugin(plugin) != null && pm.getPlugin(plugin).isEnabled()) {
-						player.sendMessage(ChatColor.RED + "Another plugin has set a command to this key.");
-						return;
+			pc = PlayerCmd.get(player, allPressed);
+			if (pc != null) {
+				if (!pluginName.equals(pc.getPlugin())) {
+					Plugin p = pm.getPlugin(pc.getPlugin());
+					if (p != null && p.isEnabled()) {
+						msg = ChatColor.RED + "That key is already set by " + pc.getPlugin();
+						break;
 					}
 				}
-				this.plugin.listPlayerConfig.get(player.getName())
-					.addCommand(event.getKey(), cmd, thisPluginName);
-			} else {
-				Config c = new Config(player.getName());
-				c.addCommand(event.getKey(), cmd, thisPluginName);
-				this.plugin.listPlayerConfig.put(player.getName(), c);
+				
+				pc.setCommand(cmd);
+				pc.setPlugin(pluginName);
+				SpoutKeyCommands.getInstance().getDatabase().update(pc);
+				break;
 			}
+			
+			pc = new PlayerCmd(allPressed, cmd, player, SpoutKeyCommands.getInstance());
+			SpoutKeyCommands.getInstance().getDatabase().save(pc);
 			break;
 			
 		case GSET:
-			msg = ChatColor.DARK_AQUA + "Global command set to key: " +
-					event.getKey().toString().replaceAll("KEY_", "");
 			if (cmd.equals("")) { return; }
+			msg = ChatColor.DARK_AQUA + "Global command set to: " +
+					ChatColor.GREEN + Utils.getKeyString(allPressed);
 			
-			if (this.plugin.listGlobalPlugin.containsKey(event.getKey())) {
-				String p = this.plugin.listGlobalPlugin.get(event.getKey());
-				PluginManager pm = this.plugin.getServer().getPluginManager();
-				if (thisPluginName.equals(p)) {
-				} else if (pm.getPlugin(p) != null && pm.getPlugin(p).isEnabled()) {
-					player.sendMessage(ChatColor.RED + "That key is already set by " + p);
-					return;
+			gc = GlobalCmd.get(allPressed);
+			if (gc != null) {
+				if (!pluginName.equals(gc.getPlugin())) {
+					Plugin p = pm.getPlugin(gc.getPlugin());
+					if (p != null && p.isEnabled()) {
+						msg = ChatColor.RED + "That key is already set by " + gc.getPlugin();
+						break;
+					}
 				}
+				
+				gc.setCommand(cmd);
+				gc.setPlugin(pluginName);
+				SpoutKeyCommands.getInstance().getDatabase().update(gc);
+				break;
 			}
 			
-			this.plugin.listGlobalCmds.put(event.getKey(), cmd);
-			this.plugin.listGlobalPlugin.put(event.getKey(), thisPluginName);
+			gc = new GlobalCmd(allPressed, cmd, SpoutKeyCommands.getInstance());
+			SpoutKeyCommands.getInstance().getDatabase().save(gc);
 			break;
 			
 		case UNSET:
-			if (this.plugin.listPlayerConfig.containsKey(player.getName())) {
-				msg = ChatColor.DARK_AQUA + "Command unset from key: " +
-						event.getKey().toString().replaceAll("KEY_", "");
-				
-				Config conf = this.plugin.listPlayerConfig.get(player.getName());
-				PluginManager pm = this.plugin.getServer().getPluginManager();
-				String p = conf.getPlugin(event.getKey());
-				if (p.equals("SpoutKeyCommands")) {
-					
-				} else if (pm.getPlugin(p) != null && pm.getPlugin(p).isEnabled()) {
-					player.sendMessage(ChatColor.RED + "Key set by " + p);
-					return;
-				}
-				this.plugin.listPlayerConfig.get(player.getName()).removeCommand(event.getKey());
+			pc = PlayerCmd.get(player, allPressed);
+			if (pc == null) {
+				msg = ChatColor.RED + "No command on this combination";
+				break;
 			}
-			msg = ChatColor.RED + "No command on this key";
-			break;
-		case GUNSET:
-			if (this.plugin.listGlobalPlugin.containsKey(event.getKey())) {
-				msg = ChatColor.DARK_AQUA + "Global command unset from key: " +
-						event.getKey().toString().replaceAll("KEY_", "");
-				
-				String p = this.plugin.listGlobalPlugin.get(event.getKey());
-				PluginManager pm = this.plugin.getServer().getPluginManager();
-				if (thisPluginName.equals(p)) {
-				} else if (pm.getPlugin(p) != null && pm.getPlugin(p).isEnabled()) {
-					player.sendMessage(ChatColor.RED + "That key set by " + p);
-					return;
-				}
-				this.plugin.listGlobalCmds.remove(event.getKey());
-				this.plugin.listGlobalPlugin.remove(event.getKey());
-			}
-			msg = ChatColor.RED + "No global command on this key";
 			
+			if (!pluginName.equals(pc.getPlugin())) {
+				Plugin p = pm.getPlugin(pc.getPlugin());
+				if (p != null && p.isEnabled()) {
+					msg = ChatColor.RED + "That key is set by " + pc.getPlugin();
+					break;
+				}
+			}
+			
+			SpoutKeyCommands.getInstance().getDatabase().delete(pc);
+			msg = ChatColor.DARK_AQUA + "Command unset from: " +
+					ChatColor.GREEN + Utils.getKeyString(allPressed);
+			break;
+			
+		case GUNSET:
+			gc = GlobalCmd.get(allPressed);
+			if (gc == null) {
+				msg = ChatColor.RED + "No global command on this combination";
+				break;
+			}
+			
+			if (!pluginName.equals(gc.getPlugin())) {
+				Plugin p = pm.getPlugin(gc.getPlugin());
+				if (p != null && p.isEnabled()) {
+					msg = ChatColor.RED + "That key is already set by " + gc.getPlugin();
+					break;
+				}
+			}
+			
+			SpoutKeyCommands.getInstance().getDatabase().delete(gc);
+			msg = ChatColor.DARK_AQUA + "Global command unset from: " +
+					ChatColor.GREEN + Utils.getKeyString(allPressed);
 			break;
 		}
 		
+//		PlayerOptions.setPressed(player.getName(), new LinkedHashSet<Keyboard>());
+		
 		player.sendMessage(msg);
+	}
+	
+	@Override
+	public void onKeyReleasedEvent(KeyReleasedEvent event) {
+		SpoutPlayer player = event.getPlayer();
+		PlayerOptions.removePressed(player.getName(), event.getKey());
 	}
 	
 }

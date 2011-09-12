@@ -1,86 +1,48 @@
 name: SpoutKeyCommands
 main: com.yurijware.bukkit.SpoutKeyCommands.SpoutKeyCommands
-version: 1.2
+version: 2.0
+database: true
 authors: [Yurij]
-softdepend: [Spout,PermissionsEx,Permissions]
+depends: [Spout]
+softdepend: [PermissionsEx,Permissions]
 
 description: >
             Allows players to set commands to keys
             
 permissions:
-  SpoutKeyCommands.user:
-    description: Allows you to use normal user commands and functionality
-    default: true
-    children:
-      SpoutKeyCommands.set.personal: true
-      SpoutKeyCommands.use.personal: true
-      SpoutKeyCommands.use.global: true
-      SpoutKeyCommands.check.self: true
-      
   SpoutKeyCommands.*:
     description: Allows you to use all commands and functionality
     default: op
     children:
-      SpoutKeyCommands.set.*: true
-      SpoutKeyCommands.use.*: true
-      SpoutKeyCommands.check.*: true
-      SpoutKeyCommands.reload: true
+      SpoutKeyCommands.use: true
+      SpoutKeyCommands.setglobal: true
+      SpoutKeyCommands.check-other: true
+      SpoutKeyCommands.admin: true
       
-  SpoutKeyCommands.use.*:
-    description: Allows you to use both personal and global commands
-    children:
-      SpoutKeyCommands.use.personal: true
-      SpoutKeyCommands.use.global: true
+  SpoutKeyCommands.use:
+    description: Allows you to use commands
       
-  SpoutKeyCommands.use.personal:
-    description: Allows you to use personal commands
-    default: true
-    
-  SpoutKeyCommands.use.global:
-    description: Allows you to use global commands
-    default: true
-    
-  SpoutKeyCommands.set.*:
-    description: Allows you to set both personal and global commands
-    children:
-      SpoutKeyCommands.set.personal: true
-      SpoutKeyCommands.set.global: true
-      
-  SpoutKeyCommands.set.personal:
-    description: Allows you to set personal commands
-    default: true
-    
-  SpoutKeyCommands.set.global:
+  SpoutKeyCommands.set-global:
     description: Allows you to set global commands
     
-  SpoutKeyCommands.check.*:
-    description: Allows you to check both own and others commands
-    children:
-      SpoutKeyCommands.check.self: true
-      SpoutKeyCommands.check.other: true
-      
-  SpoutKeyCommands.check.self:
-    description: Allows you to check your own commands
-    default: true
-    
-  SpoutKeyCommands.check.other:
+  SpoutKeyCommands.check-other:
     description: Allows you to check others commands
     
-  SpoutKeyCommands.reload:
-    description: Allows you to save and load database config
+  SpoutKeyCommands.admin:
+    description: Allows you change admin config
     
 commands:
   SpoutKeyCommands:
     aliases: [skc]
     description: Warps you to another world
     usage: |
-           /<command> set <command> - Set personal command
-           /<command> gset <command> - Set global command
-           /<command> unset - Unset personal command
-           /<command> gunset - Unset global command
-           /<command> check [player] - Check wich commands are set
-           /<command> clear - Clears all personal commands
-           /<command> gclear - Clears all global commands
-           /<command> save - Saves the commands to the database
-           /<command> load - Loads the commands from the database
+           /<command> set <command> - Set personal key
+           /<command> gset <command> - Set global key
+           /<command> unset - Unset personal key
+           /<command> gunset - Unset global key
+           /<command> check global|personal [player] - Check wich keys are set
+           /<command> config - Check availible configurations
+           /<command> clear - Clear all personal keys
+           /<command> gclear - Clear all global keys
+           /<command> reload - Reload all config and keys
            
