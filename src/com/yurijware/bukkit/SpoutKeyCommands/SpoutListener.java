@@ -165,8 +165,6 @@ public class SpoutListener extends InputListener {
 			break;
 		}
 		
-//		PlayerOptions.setPressed(player.getName(), new LinkedHashSet<Keyboard>());
-		
 		player.sendMessage(msg);
 	}
 	
