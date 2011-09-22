@@ -22,7 +22,7 @@ public class SpoutKeyCommands extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		LogInfo(logPrefix + "Plugin disabled!");
+		LogInfo("Plugin disabled!");
 	}
 	
 	@Override
