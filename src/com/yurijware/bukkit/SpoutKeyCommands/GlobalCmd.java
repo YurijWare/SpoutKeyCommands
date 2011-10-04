@@ -19,7 +19,7 @@ public class GlobalCmd {
 	@Id
 	private int id;
 	@NotEmpty
-	private String keys;
+	private String combination;
 	@NotEmpty
 	private String command;
 	@NotEmpty
@@ -28,7 +28,7 @@ public class GlobalCmd {
 	
 	protected static GlobalCmd get(LinkedHashSet<Keyboard> keys) {
 		GlobalCmd gk = SpoutKeyCommands.getInstance().getDatabase().find(GlobalCmd.class)
-				.where().eq("keys", Utils.getKeyString(keys)).findUnique();
+				.where().eq("combination", Utils.getKeyString(keys)).findUnique();
 		return gk;
 	}
 	
@@ -48,7 +48,7 @@ public class GlobalCmd {
 	}	
 	
 	public GlobalCmd(LinkedHashSet<Keyboard> list, String command, Plugin plugin) {
-		this.keys = Utils.getKeyString(list);
+		this.combination = Utils.getKeyString(list);
 		this.command = command;
 		this.plugin = plugin.getDescription().getName();
 	}
@@ -61,12 +61,12 @@ public class GlobalCmd {
 		this.id = id;
 	}
 	
-	public String getKeys() {
-		return keys;
+	public String getCombination() {
+		return combination;
 	}
 	
-	public void setKeys(String keys) {
-		this.keys = keys;
+	public void setCombination(String combination) {
+		this.combination = combination;
 	}
 	
 	public String getCommand() {

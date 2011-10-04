@@ -1,6 +1,6 @@
 name: SpoutKeyCommands
 main: com.yurijware.bukkit.SpoutKeyCommands.SpoutKeyCommands
-version: 2.0
+version: 2.1
 database: true
 authors: [Yurij]
 depends: [Spout]

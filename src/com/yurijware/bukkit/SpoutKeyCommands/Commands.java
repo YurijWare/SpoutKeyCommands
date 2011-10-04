@@ -210,7 +210,7 @@ public class Commands implements CommandExecutor {
 			Iterator<PlayerCmd> itr = PlayerCmd.getList(name).iterator();
 			while (itr.hasNext()) {
 				PlayerCmd pc = itr.next();
-				String k = pc.getKeys();
+				String k = pc.getCombination();
 				String c = pc.getCommand();
 				sender.sendMessage(ChatColor.AQUA + k + ": /" + c);
 				count++;
@@ -220,7 +220,7 @@ public class Commands implements CommandExecutor {
 			Iterator<GlobalCmd> itr = GlobalCmd.getList().iterator();
 			while (itr.hasNext()) {
 				GlobalCmd gc = itr.next();
-				String k = gc.getKeys();
+				String k = gc.getCombination();
 				String c = gc.getCommand();
 				sender.sendMessage(ChatColor.AQUA + k + ": /" + c);
 				count++;

@@ -22,7 +22,7 @@ public class PlayerCmd {
 	@NotEmpty
 	private String player;
 	@NotEmpty
-	private String keys;
+	private String combination;
 	@NotEmpty
 	private String command;
 	@NotEmpty
@@ -35,7 +35,7 @@ public class PlayerCmd {
 	
 	protected static PlayerCmd get(String player, LinkedHashSet<Keyboard> keys) {
 		PlayerCmd pc = SpoutKeyCommands.getInstance().getDatabase().find(PlayerCmd.class)
-				.where().ieq("player", player).eq("keys", Utils.getKeyString(keys)).findUnique();
+				.where().ieq("player", player).eq("combination", Utils.getKeyString(keys)).findUnique();
 		return pc;
 	}
 	
@@ -64,14 +64,14 @@ public class PlayerCmd {
 	}
 	
 	public PlayerCmd(LinkedHashSet<Keyboard> list, String command, Player player, Plugin plugin) {
-		this.keys = Utils.getKeyString(list);
+		this.combination = Utils.getKeyString(list);
 		this.command = command;
 		this.player = player.getName();
 		this.plugin = plugin.getDescription().getName();
 	}
 	
 	public PlayerCmd(LinkedHashSet<Keyboard> list, String command, String player, Plugin plugin) {
-		this.keys = Utils.getKeyString(list);
+		this.combination = Utils.getKeyString(list);
 		this.command = command;
 		this.player = player;
 		this.plugin = plugin.getDescription().getName();
@@ -85,12 +85,12 @@ public class PlayerCmd {
 		this.id = id;
 	}
 	
-	public String getKeys() {
-		return keys;
+	public String getCombination() {
+		return combination;
 	}
 	
-	public void setKeys(String keys) {
-		this.keys = keys;
+	public void setCombination(String combination) {
+		this.combination = combination;
 	}
 	
 	public String getCommand() {
