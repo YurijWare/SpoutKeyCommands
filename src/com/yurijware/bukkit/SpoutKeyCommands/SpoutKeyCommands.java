@@ -13,7 +13,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SpoutKeyCommands extends JavaPlugin {
-    private static final Logger log = Logger.getLogger("Minecraft");
+	private static final Logger log = Logger.getLogger("Minecraft");
 	private static String logPrefix = null;
 	private static SpoutKeyCommands plugin = null;
 	private SpoutKeyCommandsHandler handle = new SpoutKeyCommandsHandler();
@@ -78,14 +78,14 @@ public class SpoutKeyCommands extends JavaPlugin {
     }
 	
 	@Override
-    public List<Class<?>> getDatabaseClasses() {
-        List<Class<?>> list = new ArrayList<Class<?>>();
-        list.add(PlayerCmd.class);
-        list.add(GlobalCmd.class);
-        list.add(PlayerOptions.class);
-        list.add(GlobalOptions.class);
-        return list;
-    }
+	public List<Class<?>> getDatabaseClasses() {
+		List<Class<?>> list = new ArrayList<Class<?>>();
+		list.add(PlayerCmd.class);
+		list.add(GlobalCmd.class);
+		list.add(PlayerOptions.class);
+		list.add(GlobalOptions.class);
+		return list;
+	}
 	
 	protected static SpoutKeyCommands getInstance() {
 		return plugin;
